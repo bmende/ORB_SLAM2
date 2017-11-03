@@ -41,6 +41,11 @@ endif()
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 
+find_package(PCL REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/../../../
@@ -79,7 +84,9 @@ ${LIBS}
 
 # Node for stereo camera
 rosbuild_add_executable(Stereo
-src/ros_stereo.cc
+  src/ros_stereo.cc
+  ${PROJECT_SOURCE_DIR}/../../../src/SlamDataPub.cc
+  ${PROJECT_SOURCE_DIR}/../../../include/SlamDataPub.h
 )
 
 target_link_libraries(Stereo

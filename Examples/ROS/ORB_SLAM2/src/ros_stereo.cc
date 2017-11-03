@@ -23,6 +23,7 @@
 #include<algorithm>
 #include<fstream>
 #include<chrono>
+#include<thread>
 
 #include<ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
@@ -33,17 +34,20 @@
 #include<opencv2/core/core.hpp>
 
 #include"../../../include/System.h"
+#include"../../../include/SlamDataPub.h"
 
 using namespace std;
 
 class ImageGrabber
 {
 public:
-    ImageGrabber(ORB_SLAM2::System* pSLAM):mpSLAM(pSLAM){}
+    ImageGrabber(ORB_SLAM2::System* pSLAM, ORB_SLAM2::SlamDataPub* pSlamPub):
+        mpSLAM(pSLAM), mpSlamDataPub(pSlamPub){ cout << "hahahaha\n"; }
 
     void GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight);
 
     ORB_SLAM2::System* mpSLAM;
+    ORB_SLAM2::SlamDataPub* mpSlamDataPub;
     bool do_rectify;
     cv::Mat M1l,M2l,M1r,M2r;
 };
@@ -58,18 +62,30 @@ int main(int argc, char **argv)
         cerr << endl << "Usage: rosrun ORB_SLAM2 Stereo path_to_vocabulary path_to_settings do_rectify" << endl;
         ros::shutdown();
         return 1;
-    }    
+    }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,true,true);
 
-    ImageGrabber igb(&SLAM);
+    ORB_SLAM2::SlamDataPub* mpSlamDataPub = new ORB_SLAM2::SlamDataPub(&SLAM,
+                                                                       SLAM.GetFrameDrawer(),
+                                                                       SLAM.GetMapDrawer(),
+                                                                       SLAM.GetTracker(),
+                                                                       argv[2],
+                                                                       SLAM.GetMap());
+
+    cout << "did that!\n";
+    thread* mptSlamDataPub = new thread(&ORB_SLAM2::SlamDataPub::Run, mpSlamDataPub);
+    cout << "and that!\n";
+
+    ImageGrabber igb(&SLAM, mpSlamDataPub);
+    cout << "woohoo\n";
 
     stringstream ss(argv[3]);
 	ss >> boolalpha >> igb.do_rectify;
 
     if(igb.do_rectify)
-    {      
+    {
         // Load settings related to stereo calibration
         cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
         if(!fsSettings.isOpened())
@@ -109,8 +125,8 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
 
-    message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, "/camera/left/image_raw", 1);
-    message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, "/camera/right/image_raw", 1);
+    message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, "/webcam/left/image_raw", 1);
+    message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, "/webcam/right/image_raw", 1);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub,right_sub);
     sync.registerCallback(boost::bind(&ImageGrabber::GrabStereo,&igb,_1,_2));
@@ -119,6 +135,11 @@ int main(int argc, char **argv)
 
     // Stop all threads
     SLAM.Shutdown();
+
+    mpSlamDataPub->RequestFinish();
+    while(!mpSlamDataPub->isFinished()) {
+        usleep(500);
+    }
 
     // Save camera trajectory
     SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory_TUM_Format.txt");
@@ -155,18 +176,19 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
         return;
     }
 
+    cv::Mat pose;
     if(do_rectify)
     {
         cv::Mat imLeft, imRight;
         cv::remap(cv_ptrLeft->image,imLeft,M1l,M2l,cv::INTER_LINEAR);
         cv::remap(cv_ptrRight->image,imRight,M1r,M2r,cv::INTER_LINEAR);
-        mpSLAM->TrackStereo(imLeft,imRight,cv_ptrLeft->header.stamp.toSec());
+        pose = mpSLAM->TrackStereo(imLeft,imRight,cv_ptrLeft->header.stamp.toSec());
     }
     else
     {
-        mpSLAM->TrackStereo(cv_ptrLeft->image,cv_ptrRight->image,cv_ptrLeft->header.stamp.toSec());
+        pose = mpSLAM->TrackStereo(cv_ptrLeft->image,cv_ptrRight->image,cv_ptrLeft->header.stamp.toSec());
     }
+    mpSlamDataPub->SetCurrentCameraPose(pose);
+
 
 }
-
-
