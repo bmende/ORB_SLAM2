@@ -31,11 +31,15 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include "geometry_msgs/TransformStamped.h"
+#include "geometry_msgs/Pose.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "../../../include/System.h"
 #include "tf/transform_datatypes.h"
 #include <tf/transform_broadcaster.h>
 
 using namespace std;
+
+ros::Publisher pose_pub;
 
 class ImageGrabber
 {
@@ -116,6 +120,8 @@ int main(int argc, char **argv)
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub,right_sub);
     sync.registerCallback(boost::bind(&ImageGrabber::GrabStereo,&igb,_1,_2));
 
+    pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/orb_slam2/pose", 1);
+
     ros::spin();
 
     // Stop all threads
@@ -170,10 +176,10 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
     }
 
 
-    cout << pose << endl;
-
     if (pose.empty())
         return;
+
+    cout << pose << endl;
 
     /* global left handed coordinate system */
     static cv::Mat pose_prev = cv::Mat::eye(4,4, CV_32F);
@@ -192,8 +198,8 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
 
     /* transform into global right handed coordinate system, publish in ROS*/
     tf::Matrix3x3 cameraRotation_rh(  - world_lh.at<float>(0,0),   world_lh.at<float>(0,1),   world_lh.at<float>(0,2),
-                                  - world_lh.at<float>(1,0),   world_lh.at<float>(1,1),   world_lh.at<float>(1,2),
-                                    world_lh.at<float>(2,0), - world_lh.at<float>(2,1), - world_lh.at<float>(2,2));
+                                      - world_lh.at<float>(1,0),   world_lh.at<float>(1,1),   world_lh.at<float>(1,2),
+                                        world_lh.at<float>(2,0), - world_lh.at<float>(2,1), - world_lh.at<float>(2,2));
 
     tf::Vector3 cameraTranslation_rh( world_lh.at<float>(0,3),world_lh.at<float>(1,3), - world_lh.at<float>(2,3) );
 
@@ -211,6 +217,21 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
     globalRotation_rh.getRotation(q);
 
     tf::Transform transform = tf::Transform(q, globalTranslation_rh);
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_link", "camera_pose"));
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "base_link"));
 
+    geometry_msgs::PoseStamped pose_msg;
+
+    pose_msg.header.frame_id = "/map";
+    pose_msg.header.stamp = ros::Time::now();
+
+    pose_msg.pose.orientation.x = transform.getRotation().getX();
+    pose_msg.pose.orientation.y = transform.getRotation().getY();
+    pose_msg.pose.orientation.z = transform.getRotation().getZ();
+    pose_msg.pose.orientation.w = transform.getRotation().getW();
+
+    pose_msg.pose.position.x = transform.getOrigin().getX();
+    pose_msg.pose.position.y = transform.getOrigin().getY();
+    pose_msg.pose.position.z = transform.getOrigin().getZ();
+
+    pose_pub.publish(pose_msg);
 }
