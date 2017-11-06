@@ -40,8 +40,16 @@ SlamDataPub::SlamDataPub(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *
     }
 
     // camera under ground
-    mInitCam2Ground_R << 1,0,0,0,0,1,0,-1,0;  // camera coordinate represented in ground coordinate system
-    //mInitCam2Ground_R << 0.9848077,0.1736482,0,-0.1736482,0.9848077,0,0,0,1;
+    //mInitCam2Ground_R << 1,0,0,0,0,1,0,-1,0;  // camera coordinate represented in ground coordinate system
+    //mInitCam2Ground_R << 0,0,1,-1,0,0,0,-1,0;
+    cv::Mat orient;
+    fSettings["Camera.Orientation"] >> orient;
+
+    cout << "Camera Orientation Matrix\n";
+    cout << orient << endl << endl;
+    cv2eigen(orient, mInitCam2Ground_R);
+
+
     mInitCam2Ground_t.setZero();
     mTrans_cam2ground.setIdentity();   // Set to Identity to make bottom row of Matrix 0,0,0,1
     mTrans_cam2ground.block<3,3>(0,0) = mInitCam2Ground_R;

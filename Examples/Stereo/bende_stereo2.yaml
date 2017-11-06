@@ -1,0 +1,127 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# Camera calibration and distortion parameters (OpenCV)
+Camera.fx: 458.772089
+Camera.fy: 458.960963
+Camera.cx: 317.095935
+Camera.cy: 187.027323
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+
+Camera.width: 640
+Camera.height: 360
+
+# Camera frames per second
+Camera.fps: 30.0
+
+# stereo baseline times fx
+Camera.bf: 116.779338
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+# Close/Far threshold. Baseline times.
+ThDepth: 35
+
+#--------------------------------------------------------------------------------------------
+# Stereo Rectification. Only if you need to pre-rectify the images.
+# Camera.fx, .fy, etc must be the same as in LEFT.P
+#--------------------------------------------------------------------------------------------
+LEFT.height: 360
+LEFT.width: 640
+LEFT.D: !!opencv-matrix
+  rows: 1
+  cols: 5
+  dt: d
+  data: [0.097367, -0.170399, -0.002713, 0.002219, 0.000000]
+LEFT.K: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [458.772089, 0.000000, 317.095935, 0.000000, 458.960963, 187.027323, 0.000000, 0.000000, 1.000000]
+LEFT.R:  !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [0.999481, -0.005065, -0.031806, 0.005486, 0.999898, 0.013159, 0.031736, -0.013327, 0.999407]
+LEFT.P:  !!opencv-matrix
+  rows: 3
+  cols: 4
+  dt: d
+  data: [493.060273, 0.000000, 338.993584, 0.000000, 0.000000, 493.060273, 183.705542, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+
+RIGHT.height: 360
+RIGHT.width: 640
+RIGHT.D: !!opencv-matrix
+  rows: 1
+  cols: 5
+  dt: d
+  data: [0.091819, -0.140379, 0.000070, 0.001972, 0.000000]
+RIGHT.K: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [462.010797, 0.000000, 327.033280, 0.000000, 461.477580, 181.356266, 0.000000, 0.000000, 1.000000]
+RIGHT.R:  !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [0.999850, 0.012234, -0.012242, -0.012395, 0.999836, -0.013169, 0.012078, 0.013319, 0.999838]
+RIGHT.P:  !!opencv-matrix
+  rows: 3
+  cols: 4
+  dt: d
+  data: [493.060273, 0.000000, 338.993584, -116.779338, 0.000000, 493.060273, 183.705542, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast
+ORBextractor.iniThFAST: 22
+ORBextractor.minThFAST: 5
+
+
+Camera.Orientation:  !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [ 1, 0, 0, 0, -0.2292004, 0.9733793, 0, -0.9733793, -0.2292004 ]
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize:2
+Viewer.CameraSize: 0.2
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -2
+Viewer.ViewpointZ: -0.01
+Viewer.ViewpointF: 500
+
+#--------------------------------------------------------------------------------------------
+# Map Parapeters
+#--------------------------------------------------------------------------------------------
+Map.mapfile: map-bende.bin

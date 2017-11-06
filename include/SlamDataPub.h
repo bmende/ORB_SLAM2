@@ -44,6 +44,11 @@ class System;
 class SlamDataPub
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    //fixed-size vectorizable Eigen types are a memeber of this class
+    // http://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html
+    // http://eigen.tuxfamily.org/dox-devel/group__TopicUnalignedArrayAssert.html
+
     SlamDataPub(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath, Map *pMap);
 
     // Main thread function. Draw points, keyframes, the current camera pose and the last processed
