@@ -162,7 +162,7 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
         return;
     }
 
-    cv::Mat pose;
+    cv::Mat pose, other_r, other_p;
     if(do_rectify)
     {
         cv::Mat imLeft, imRight;
@@ -180,28 +180,30 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
         return;
 
     cout << pose << endl;
+    other_r = mpSLAM->GetTracker()->mCurrentFrame.GetRotationInverse();
+    other_p = mpSLAM->GetTracker()->mCurrentFrame.GetCameraCenter();
+    cout << other_r << endl;
+    cout << other_p << endl << endl;
 
     /* global left handed coordinate system */
-    static cv::Mat pose_prev = cv::Mat::eye(4,4, CV_32F);
     static cv::Mat world_lh = cv::Mat::eye(4,4, CV_32F);
     // matrix to flip signs of sinus in rotation matrix, not sure why we need to do that
     static const cv::Mat flipSign = (cv::Mat_<float>(4,4) <<   1,-1,-1, 1,
-                                                               -1, 1,-1, 1,
-                                                               -1,-1, 1, 1,
-                                                                1, 1, 1, 1);
+                                                              -1, 1,-1, 1,
+                                                              -1,-1, 1, 1,
+                                                               1, 1, 1, 1);
 
     //prev_pose * T = pose
-    cv::Mat translation =  (pose * pose_prev.inv()).mul(flipSign);
-    world_lh = world_lh * translation;
-    pose_prev = pose.clone();
+    cv::Mat translation =  (pose).mul(flipSign);
+    world_lh = pose;
 
 
     /* transform into global right handed coordinate system, publish in ROS*/
-    tf::Matrix3x3 cameraRotation_rh(  - world_lh.at<float>(0,0),   world_lh.at<float>(0,1),   world_lh.at<float>(0,2),
-                                      - world_lh.at<float>(1,0),   world_lh.at<float>(1,1),   world_lh.at<float>(1,2),
-                                        world_lh.at<float>(2,0), - world_lh.at<float>(2,1), - world_lh.at<float>(2,2));
+    tf::Matrix3x3 cameraRotation_rh(  - other_r.at<float>(0,0),   other_r.at<float>(0,1),   other_r.at<float>(0,2),
+                                      - other_r.at<float>(1,0),   other_r.at<float>(1,1),   other_r.at<float>(1,2),
+                                        other_r.at<float>(2,0), - other_r.at<float>(2,1), - other_r.at<float>(2,2));
 
-    tf::Vector3 cameraTranslation_rh( world_lh.at<float>(0,3),world_lh.at<float>(1,3), - world_lh.at<float>(2,3) );
+    tf::Vector3 cameraTranslation_rh( other_p.at<float>(0),other_p.at<float>(1), - other_p.at<float>(2) );
 
     //rotate 270deg about x and 270deg about x to get ENU: x forward, y left, z up
     const tf::Matrix3x3 rotation270degXZ(   0, 1, 0,
