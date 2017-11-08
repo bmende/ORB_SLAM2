@@ -176,6 +176,7 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
     }
 
 
+
     if (pose.empty())
         return;
 
@@ -218,6 +219,7 @@ void ImageGrabber::GrabStereo(const sensor_msgs::ImageConstPtr& msgLeft,const se
 
     globalRotation_rh.getRotation(q);
 
+    cout << globalTranslation_rh.getX() << ", " << globalTranslation_rh.getY() << ", " << globalTranslation_rh.getZ() << endl;
     tf::Transform transform = tf::Transform(q, globalTranslation_rh);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "base_link"));
 
