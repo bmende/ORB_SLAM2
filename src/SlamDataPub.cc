@@ -76,11 +76,11 @@ void SlamDataPub::TrackingDataPub()
         {
             GetCurrentROSCameraMatrix(camPose2Ground);
             GetCurrentROSVehicleMatrix(vehiclePose2Ground);
-            GetCurrentROSTrajectories(cameraPath, vehiclePath);
+            //GetCurrentROSTrajectories(cameraPath, vehiclePath);
             CamPose_pub_.publish(camPose2Ground);
             VehiclePose_pub_.publish(vehiclePose2Ground);
-            CamPath_pub_.publish(cameraPath);   // KeyFrames
-            VehiclePath_pub_.publish(vehiclePath);
+            //CamPath_pub_.publish(cameraPath);   // KeyFrames
+            //VehiclePath_pub_.publish(vehiclePath);
 
             float tf_q_x = vehiclePose2Ground.pose.orientation.x;
             float tf_q_y = vehiclePose2Ground.pose.orientation.y;
@@ -173,11 +173,11 @@ void SlamDataPub::Run()
     //DrawFrame_pub_ = it_.advertise("/frame_now", 1);
 
     thread threadCamPosePub(&SlamDataPub::TrackingDataPub,this);
-    thread threadPointCloudPub(&SlamDataPub::PointCloudPub,this);
+    //thread threadPointCloudPub(&SlamDataPub::PointCloudPub,this);
     //thread threadDrawFramePub(&SlamDataPub::DrawFramePub,this);
 
     threadCamPosePub.join();
-    threadPointCloudPub.join();
+    //threadPointCloudPub.join();
 
     SetFinish();
 }
