@@ -173,11 +173,11 @@ void SlamDataPub::Run()
     //DrawFrame_pub_ = it_.advertise("/frame_now", 1);
 
     thread threadCamPosePub(&SlamDataPub::TrackingDataPub,this);
-    //thread threadPointCloudPub(&SlamDataPub::PointCloudPub,this);
+    thread threadPointCloudPub(&SlamDataPub::PointCloudPub,this);
     //thread threadDrawFramePub(&SlamDataPub::DrawFramePub,this);
 
     threadCamPosePub.join();
-    //threadPointCloudPub.join();
+    threadPointCloudPub.join();
 
     SetFinish();
 }
