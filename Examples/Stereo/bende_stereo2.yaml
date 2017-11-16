@@ -105,10 +105,10 @@ Camera.Orientation:  !!opencv-matrix
   rows: 3
   cols: 3
   dt: d
-  data: [ 1, 0, 0, 0, -0.2292004, 0.9733793, 0, -0.9733793, -0.2292004 ]
+  data: [  0.0000000, -0.2249511,  0.9743701,  -1.0000000,  0.0000000,  0.0000000,   0.0000000, -0.9743701, -0.2249511 ]
 
-Camera.left_topic = "/webcam/left/image_raw"
-Camera.right_topic = "/webcam/right/image_raw"
+Camera.left_topic: "/webcam/left/image_raw"
+Camera.right_topic: "/webcam/right/image_raw"
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters
@@ -127,4 +127,4 @@ Viewer.ViewpointF: 500
 #--------------------------------------------------------------------------------------------
 # Map Parapeters
 #--------------------------------------------------------------------------------------------
-Map.mapfile: map-bende.bin
+Map.mapfile: map-lgrc.bin
