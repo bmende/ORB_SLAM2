@@ -70,6 +70,7 @@ void SlamDataPub::TrackingDataPub()
     geometry_msgs::PoseStamped camPose2Ground;
     geometry_msgs::PoseStamped vehiclePose2Ground;
     nav_msgs::Path cameraPath, vehiclePath;
+    std_msgs::Bool tracking_state;
     while(1)
     {
         if(mbGetNewCamPose)
@@ -81,6 +82,16 @@ void SlamDataPub::TrackingDataPub()
             VehiclePose_pub_.publish(vehiclePose2Ground);
             //CamPath_pub_.publish(cameraPath);   // KeyFrames
             //VehiclePath_pub_.publish(vehiclePath);
+
+            // 2 is localized, 3 is lost, < 2 is some type of not initialized
+            // see Tracking.h for more details
+            int t_state = mpSystem->GetTrackingState();
+            if (t_state == 2) {
+                tracking_state.data = true;
+            } else {
+                tracking_state.data = false;
+            }
+            TrackingState_pub_.publish(tracking_state);
 
             float tf_q_x = vehiclePose2Ground.pose.orientation.x;
             float tf_q_y = vehiclePose2Ground.pose.orientation.y;
@@ -164,6 +175,7 @@ void SlamDataPub::Run()
 
     CamPose_pub_ = nh.advertise<geometry_msgs::PoseStamped >("camera_pose",1);
     VehiclePose_pub_ = nh.advertise<geometry_msgs::PoseStamped >("vehicle_pose",1);
+    TrackingState_pub_ = nh.advertise<std_msgs::Bool>("orb_slam2_status",1);
     CamPath_pub_ = nh.advertise<nav_msgs::Path>("camera_path",1);
     VehiclePath_pub_ = nh.advertise<nav_msgs::Path>("vehicle_path",1);
     AllPointCloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("point_cloud_all",1);

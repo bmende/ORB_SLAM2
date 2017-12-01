@@ -22,6 +22,7 @@ site: https://github.com/MasterIzumi/orb_slam_ros
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_msgs/Bool.h>
 
 //#include <pcl/visualization/cloud_viewer.h>
 #include <pcl/io/pcd_io.h>
@@ -97,6 +98,7 @@ private:
     //ros::Publisher path_pub_;
     ros::Publisher CamPose_pub_;
     ros::Publisher VehiclePose_pub_;
+    ros::Publisher TrackingState_pub_;
     ros::Publisher CamPath_pub_;
     ros::Publisher VehiclePath_pub_;
     ros::Publisher AllPointCloud_pub_;
